@@ -26,10 +26,12 @@
   },
   "homepage": "https://github.com/DanTalash/vlc-media-db-to-m3u#readme",
   "devDependencies": {
-    "ts-node": "^10.9.2",
-    "typescript": "^5.6.2"
   },
   "dependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.2",
+    "reflect-metadata": "^0.2.2",
+    "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20"
   }
 }
