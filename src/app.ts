@@ -3,7 +3,7 @@ import { DataSource } from "typeorm";
 import { Folder } from "./entities/Folder";
 import { Media } from "./entities/Media";
 import { Playlist } from "./entities/Playlist";
-// import { PlaylistMediaRelation } from "./entities/PlaylistMediaRelation";
+import { PlaylistMediaRelation } from "./entities/PlaylistMediaRelation";
 
 const DB_FILE = './data/vlc_media.db';
 
@@ -15,7 +15,7 @@ export const AppDataSource = new DataSource({
         Folder,
         Media,
         Playlist,
-        // PlaylistMediaRelation
+        PlaylistMediaRelation
     ]
 });
 
@@ -41,30 +41,24 @@ export class MediaDbReader {
     }
     
     async readDb() {
-        console.log('readDb start');
+        console.log('readDb start')
         
-        const playlists = await AppDataSource.getRepository(Playlist).createQueryBuilder().getMany();
-        const folders = await AppDataSource.getRepository(Folder).createQueryBuilder().getMany();
-        
-        console.log(`Playlists: ${JSON.stringify(playlists)}`);
-        console.log(`Folders: ${JSON.stringify(folders)}`);
+        const playlists = await AppDataSource
+            .getRepository(Playlist)
+            .createQueryBuilder('playlist')
+            .innerJoinAndSelect('playlist.items', 'item')
+            .innerJoinAndSelect('item.folder', 'folder')
+            .getMany();
+            
+        for (const playlist of playlists) {
+            console.log(`Playlist: ${playlist.name}`);
+            for (const item of playlist.items) {
+                console.log(`Playlist item: ${item.folder.path}/${item.filename} (playlist: '${playlist.name}')`);
+                
+            }
+        }
     }
 }
-
-/**
- *   
-SELECT 
-  p.name, 
-  m.title, 
-  f.path || '/' || m.filename 
-FROM `Playlist` p
-  
-JOIN `PlaylistMediaRelation` pm on pm.playlist_id = p.id_playlist
-  
-JOIN `Media` m on pm.media_id = m.id_media
-  
-JOIN `Folder` f on m.folder_id = f.id_folder
- */
 
 const app = new MediaDbReader();
 app.run();
